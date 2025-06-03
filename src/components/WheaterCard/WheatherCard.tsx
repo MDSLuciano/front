@@ -17,13 +17,19 @@ export default function WeatherCard({weather, refreshCard}: WeatherCardProps){
         // TODO: VERIFICAR SE A CIDADE É FAVORITA, SE FOR,
         // CHAMAR A API PARA REMOVER CIDADE DOS FAVORITOS
         // SENÃO, ADICIONAR CIDADE AOS FAVORITOS
-        const response = await api.get("/favoritecity")
-        console.log(response.data)
-
+        if(!isFavorited){
+            await api.delete(`/favoritecity/${weather.favoriteCityId}`)
+        }else {
+            await api.post("/favoritecity", {
+                "name" : weather.location.name
+            })
+        }
         // TODO: TROCAR O VALOR DE ISFAVORITED
+        
+        setIsFavorited(!isFavorited)
         // TODO: CHAMAR RESFRESHCARD COM O NOME DA CIDADE
+        refreshCard(weather.location.name)
     }
-
     return (
         <div className="card">
             <div className="favorite-icon" onClick={toggleFavorite}>
@@ -36,6 +42,8 @@ export default function WeatherCard({weather, refreshCard}: WeatherCardProps){
                 <p>Condição: {weather.current.condition.text}</p>
                 <p>Ultima Atualização: {format(weather.current.last_updated, "dd-MM-yyyy HH:mm")} </p>
             </div>
+
+            <img src={weather.current.condition.icon} />
         </div>
     )
 

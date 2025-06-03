@@ -4,10 +4,13 @@ import "./WeatherPage.css"
 import type { Weather } from "../../models/WeatherModel"
 import { api } from "../../lib/axios"
 import type { FavoriteCity } from "../../models/FavoriteCity"
+import WeatherCard from "../../components/WheaterCard/WheatherCard"
 
 export default function WeatherPage() {
     const [favoriteCitiesData, setfavoriteCitiesData] = useState<Weather[]>([])
-    const [isLoading, setIsLoading] = useState<boolean>(true)
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [cityToSearch, setCityToSearch] = useState<string>("");
+    const [cityWeatherData, setCityWeatherData] = useState<Weather>();
 
     async function getFavoriteCities() {
         //TODO: LIMPAR DADOS ANTERIORES DE CIDADES FAVORITAS
@@ -48,11 +51,29 @@ export default function WeatherPage() {
         }
     }
 
+    async function onSubmitSearch(e: any) {
+        e.preventDefault()
 
+        const responseWeather = await getWeatherByCity(cityToSearch);
+
+        if(responseWeather){
+            setCityWeatherData(responseWeather);
+        }
+
+        setCityToSearch("");
+    }
 
     return (
         <div className="container">
             <Header />
+
+            <form action="#" className="formSearch" onSubmit={onSubmitSearch}>
+                <input type="text" className="inputSearch" value={cityToSearch} onChange={(e =>
+                    setCityToSearch(e.target.value))} placeholder="Digite o nome da cidade" />
+                <button className="buttonSearch" type="submit">Buscar</button>
+            </form>
+
+            {cityWeatherData && <WeatherCard weather={cityWeatherData} refreshCard={() => {}} />}
 
             <h2 className="favoriteCitiesTitle">Cidades Favoritas</h2>
 
