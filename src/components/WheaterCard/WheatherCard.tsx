@@ -14,10 +14,11 @@ export default function WeatherCard({weather, refreshCard}: WeatherCardProps){
     const [isFavorited, setIsFavorited] = useState(weather.isFavorite);
 
     async function toggleFavorite() {
+        console.log(weather)
         // TODO: VERIFICAR SE A CIDADE É FAVORITA, SE FOR,
         // CHAMAR A API PARA REMOVER CIDADE DOS FAVORITOS
         // SENÃO, ADICIONAR CIDADE AOS FAVORITOS
-        if(!isFavorited){
+        if(isFavorited){
             await api.delete(`/favoritecity/${weather.favoriteCityId}`)
         }else {
             await api.post("/favoritecity", {

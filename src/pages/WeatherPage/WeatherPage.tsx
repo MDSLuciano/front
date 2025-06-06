@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Header from "../../components/Header/Header"
 import "./WeatherPage.css"
 import type { Weather } from "../../models/WeatherModel"
@@ -12,6 +12,10 @@ export default function WeatherPage() {
     const [cityToSearch, setCityToSearch] = useState<string>("");
     const [cityWeatherData, setCityWeatherData] = useState<Weather>();
 
+    useEffect(() => {
+        getFavoriteCities()
+    }, [])
+
     async function getFavoriteCities() {
         //TODO: LIMPAR DADOS ANTERIORES DE CIDADES FAVORITAS
         setfavoriteCitiesData([]);
@@ -23,10 +27,10 @@ export default function WeatherPage() {
         const response = await api.get("/favoritecity")
         //TODO: PARA CADA ITEM DO RESPONSE BUSCAR O CLIMA DA CIDADE PELO NOME
         // E ASSIM SALVAR NO ESTADO DE CIDADES FAVORITAS
-        response.data.forEach(async(item: FavoriteCity) => {
+        response.data.forEach(async (item: FavoriteCity) => {
             const responseWeather = await getWeatherByCity(item.name);
 
-            if(responseWeather){
+            if (responseWeather) {
                 setfavoriteCitiesData((prevState) => [...prevState, responseWeather])
             }
         })
@@ -44,9 +48,9 @@ export default function WeatherPage() {
         //NOME DA CIDADE E RETORNAR O RESULTADO
         const response = await api.get<Weather>("/weather/" + cityName)
 
-        if(response.status === 200){
+        if (response.status === 200) {
             return response.data;
-        }else {
+        } else {
             console.error("Erro ao carregar clima da cidade")
         }
     }
@@ -56,11 +60,16 @@ export default function WeatherPage() {
 
         const responseWeather = await getWeatherByCity(cityToSearch);
 
-        if(responseWeather){
+        if (responseWeather) {
             setCityWeatherData(responseWeather);
         }
 
         setCityToSearch("");
+    }
+
+    async function refreshCardSearch() {
+        getFavoriteCities()
+        setCityWeatherData(undefined)
     }
 
     return (
@@ -73,10 +82,16 @@ export default function WeatherPage() {
                 <button className="buttonSearch" type="submit">Buscar</button>
             </form>
 
-            {cityWeatherData && <WeatherCard weather={cityWeatherData} refreshCard={() => {}} />}
+            {cityWeatherData && <WeatherCard weather={cityWeatherData} refreshCard={refreshCardSearch} />}
 
             <h2 className="favoriteCitiesTitle">Cidades Favoritas</h2>
 
+            <div className="favoriteCities">
+                {isLoading ? <p>Carregando cidades favoritas...</p> :
+                    favoriteCitiesData.length == 0 ? <p>Nenhuma cidade favorita encontrada.</p> :
+                        favoriteCitiesData.map((item) => <WeatherCard key={item.location.name} weather={item} refreshCard={getFavoriteCities} />)
+                }
+            </div>
         </div>
     )
 }
